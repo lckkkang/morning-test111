@@ -53,7 +53,7 @@ def make_html(news):
     <body style="
         width:750px;
         height:1334px;
-        font-family:Microsoft YaHei;
+        font-family:"WenQuanYi Zen Hei","Noto Sans CJK SC","Microsoft YaHei",Arial;
         background:linear-gradient(#f5f7fa,#e4ecf3);
         padding:40px;
     ">
