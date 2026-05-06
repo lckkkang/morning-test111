@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 WEBHOOK = os.getenv("WEBHOOK")
 
 
-# ===== 新闻 =====
+# ===== 新闻（去重+防崩）=====
 def get_news():
     try:
         url = "https://news.google.com/rss/search?q=财经&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
@@ -17,15 +17,28 @@ def get_news():
         res.encoding = "utf-8"
 
         root = ET.fromstring(res.text)
-        news = [item.find("title").text for item in root.findall(".//item")[:3]]
 
-        return news if news else ["暂无财经新闻"]
+        news = []
+        seen = set()
+
+        for item in root.findall(".//item"):
+            title = item.find("title").text.strip()
+            if title not in seen:
+                seen.add(title)
+                news.append(title)
+            if len(news) >= 3:
+                break
+
+        while len(news) < 3:
+            news.append("暂无财经要闻")
+
+        return news
 
     except:
-        return ["新闻获取失败"]
+        return ["新闻获取失败", "新闻获取失败", "新闻获取失败"]
 
 
-# ===== UI（已对齐模板）=====
+# ===== UI =====
 def make_html(news):
     now = datetime.now()
 
@@ -48,13 +61,13 @@ def make_html(news):
         width:750px;
         height:1334px;
         font-family:'Noto Sans SC';
-        background:linear-gradient(180deg,#f3f5f7,#e7edf2);
+        background:linear-gradient(180deg,#f4f6f9,#e8edf2);
     ">
 
     <!-- LOGO -->
-    <div style="position:absolute;top:50px;left:40px;">
-        <div style="font-size:30px;font-weight:700;">通途控股</div>
-        <div style="font-size:16px;color:#777;margin-top:4px;">TONGTU HOLDINGS</div>
+    <div style="position:absolute;top:52px;left:42px;">
+        <div style="font-size:30px;font-weight:700;letter-spacing:1px;">通途控股</div>
+        <div style="font-size:14px;color:#888;margin-top:6px;">TONGTU HOLDINGS</div>
     </div>
 
     <!-- 背景大字 -->
@@ -62,10 +75,10 @@ def make_html(news):
         position:absolute;
         top:180px;
         left:40px;
-        font-size:140px;
+        font-size:150px;
         font-weight:900;
-        color:#d8dee6;
-        letter-spacing:8px;
+        color:#dfe5ea;
+        letter-spacing:14px;
     ">
         TONGTU
     </div>
@@ -75,28 +88,27 @@ def make_html(news):
         position:absolute;
         top:300px;
         left:40px;
-        font-size:96px;
+        font-size:92px;
         font-weight:900;
-        letter-spacing:2px;
     ">
-        <span style="color:#5c6f7c;">通途</span>
-        <span style="color:#c9a063;">早安</span>
+        <span style="color:#5b6f7c;">通途</span>
+        <span style="color:#c8a060;margin-left:8px;">早安</span>
     </div>
 
     <!-- 日期 -->
     <div style="
         position:absolute;
-        top:260px;
-        right:50px;
+        top:250px;
+        right:48px;
         text-align:right;
     ">
-        <div style="font-size:26px;color:#666;">{year}</div>
-        <div style="font-size:78px;font-weight:900;line-height:1;">{date_big}</div>
-        <div style="font-size:22px;color:#888;margin-top:6px;">{weekday}</div>
+        <div style="font-size:24px;color:#666;">{year}</div>
+        <div style="font-size:84px;font-weight:900;line-height:1;">{date_big}</div>
+        <div style="font-size:20px;color:#999;margin-top:4px;">{weekday}</div>
 
-        <div style="margin-top:18px;font-size:22px;line-height:1.6;">
-            <span style="color:#16a34a;">宜：{yi}</span><br>
-            <span style="color:#dc2626;">忌：{ji}</span>
+        <div style="margin-top:14px;font-size:20px;line-height:1.5;">
+            <span style="color:#1fa463;">宜：{yi}</span><br>
+            <span style="color:#e05a5a;">忌：{ji}</span>
         </div>
     </div>
 
@@ -106,9 +118,9 @@ def make_html(news):
         top:460px;
         left:30px;
         width:690px;
-        background:#f7f8fa;
-        border-radius:32px;
-        padding:34px;
+        background:#f6f7f9;
+        border-radius:34px;
+        padding:32px;
     ">
 
         <!-- 标题 -->
@@ -116,34 +128,34 @@ def make_html(news):
             background:#6f8796;
             color:#fff;
             display:inline-block;
-            padding:12px 32px;
-            border-radius:22px;
-            font-size:26px;
-            margin-bottom:26px;
+            padding:10px 30px;
+            border-radius:20px;
+            font-size:24px;
+            margin-bottom:24px;
         ">
             每日资讯
         </div>
 
         <!-- 内容 -->
         <div style="
-            font-size:28px;
+            font-size:26px;
             color:#333;
-            line-height:1.8;
+            line-height:1.7;
         ">
-            <p style="margin:0 0 22px 0;">{news[0]}</p>
+            <p style="margin:0 0 18px 0;">{news[0]}</p>
 
-            <div style="border-top:2px dashed #cfcfcf;margin:18px 0;"></div>
+            <div style="border-top:1.5px dashed #d6d6d6;margin:16px 0;"></div>
 
-            <p style="margin:0 0 22px 0;">{news[1]}</p>
+            <p style="margin:0 0 18px 0;">{news[1]}</p>
 
-            <div style="border-top:2px dashed #cfcfcf;margin:18px 0;"></div>
+            <div style="border-top:1.5px dashed #d6d6d6;margin:16px 0;"></div>
 
             <p style="margin:0;">{news[2]}</p>
         </div>
 
     </div>
 
-    <!-- 底部利率 -->
+    <!-- 底部 -->
     <div style="
         position:absolute;
         bottom:90px;
@@ -154,19 +166,19 @@ def make_html(news):
             人民币最新存款利率
         </div>
 
-        <div style="margin-top:18px;font-size:30px;">
+        <div style="margin-top:16px;font-size:30px;">
             活期存款：<span style="color:#c9a063;">0.05%</span>
         </div>
 
-        <div style="margin-top:8px;font-size:30px;">
+        <div style="margin-top:6px;font-size:30px;">
             一年定期：<span style="color:#c9a063;">0.95%</span>
         </div>
 
-        <div style="margin-top:38px;font-size:34px;color:#5c7a8a;font-weight:700;">
+        <div style="margin-top:34px;font-size:34px;color:#5c7a8a;font-weight:700;">
             天弘余额宝最新七日年化
         </div>
 
-        <div style="margin-top:12px;font-size:46px;color:#c9a063;font-weight:900;">
+        <div style="margin-top:10px;font-size:48px;color:#c9a063;font-weight:900;">
             1.0000%
         </div>
 
@@ -185,7 +197,7 @@ def screenshot():
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--no-sandbox"])
         page = browser.new_page(
-            viewport={"width":750, "height":1334},
+            viewport={"width":750,"height":1334},
             device_scale_factor=2
         )
         page.goto("file://" + os.getcwd() + "/temp.html")
@@ -195,11 +207,11 @@ def screenshot():
 
 # ===== 发送 =====
 def send():
-    img = open("out.png", "rb").read()
+    img = open("out.png","rb").read()
 
     requests.post(WEBHOOK, json={
-        "msgtype": "image",
-        "image": {
+        "msgtype":"image",
+        "image":{
             "base64": base64.b64encode(img).decode(),
             "md5": hashlib.md5(img).hexdigest()
         }
