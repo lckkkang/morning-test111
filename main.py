@@ -25,11 +25,12 @@ def get_news():
         return ["新闻获取失败"]
 
 
-# ===== UI模板 =====
+# ===== UI（已对齐模板）=====
 def make_html(news):
     now = datetime.now()
-    date_big = now.strftime("%m.%d")
+
     year = now.strftime("%Y")
+    date_big = now.strftime("%m.%d")
     weekday = ["MON","TUE","WED","THU","FRI","SAT","SUN"][now.weekday()]
 
     yi = "嫁娶 祭祀 祈福"
@@ -39,7 +40,7 @@ def make_html(news):
     <html>
     <head>
     <meta charset="utf-8">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     </head>
 
     <body style="
@@ -47,46 +48,36 @@ def make_html(news):
         width:750px;
         height:1334px;
         font-family:'Noto Sans SC';
-        background:linear-gradient(180deg,#f5f7fa,#e4ecf3);
-        overflow:hidden;
+        background:linear-gradient(180deg,#f3f5f7,#e7edf2);
     ">
 
-    <!-- 顶部光效 -->
-    <div style="
-        position:absolute;
-        width:600px;
-        height:600px;
-        background:radial-gradient(circle, rgba(255,220,150,0.8), transparent 70%);
-        top:-100px;
-        right:-100px;
-    "></div>
-
-    <!-- 大字背景 -->
-    <div style="
-        position:absolute;
-        top:140px;
-        left:40px;
-        font-size:120px;
-        font-weight:900;
-        color:#dfe5ea;
-        letter-spacing:10px;
-    ">
-        TONGTU
+    <!-- LOGO -->
+    <div style="position:absolute;top:50px;left:40px;">
+        <div style="font-size:30px;font-weight:700;">通途控股</div>
+        <div style="font-size:16px;color:#777;margin-top:4px;">TONGTU HOLDINGS</div>
     </div>
 
-    <!-- LOGO文字 -->
-    <div style="position:absolute;top:40px;left:40px;">
-        <div style="font-size:26px;font-weight:700;">通途控股</div>
-        <div style="font-size:14px;color:#888;">TONGTU HOLDINGS</div>
+    <!-- 背景大字 -->
+    <div style="
+        position:absolute;
+        top:180px;
+        left:40px;
+        font-size:140px;
+        font-weight:900;
+        color:#d8dee6;
+        letter-spacing:8px;
+    ">
+        TONGTU
     </div>
 
     <!-- 主标题 -->
     <div style="
         position:absolute;
-        top:240px;
+        top:300px;
         left:40px;
-        font-size:90px;
+        font-size:96px;
         font-weight:900;
+        letter-spacing:2px;
     ">
         <span style="color:#5c6f7c;">通途</span>
         <span style="color:#c9a063;">早安</span>
@@ -95,15 +86,15 @@ def make_html(news):
     <!-- 日期 -->
     <div style="
         position:absolute;
-        top:200px;
-        right:40px;
+        top:260px;
+        right:50px;
         text-align:right;
     ">
-        <div style="font-size:24px;color:#666;">{year}</div>
-        <div style="font-size:64px;font-weight:900;">{date_big}</div>
-        <div style="font-size:20px;color:#888;">{weekday}</div>
+        <div style="font-size:26px;color:#666;">{year}</div>
+        <div style="font-size:78px;font-weight:900;line-height:1;">{date_big}</div>
+        <div style="font-size:22px;color:#888;margin-top:6px;">{weekday}</div>
 
-        <div style="margin-top:20px;font-size:22px;">
+        <div style="margin-top:18px;font-size:22px;line-height:1.6;">
             <span style="color:#16a34a;">宜：{yi}</span><br>
             <span style="color:#dc2626;">忌：{ji}</span>
         </div>
@@ -112,64 +103,73 @@ def make_html(news):
     <!-- 卡片 -->
     <div style="
         position:absolute;
-        top:420px;
+        top:460px;
         left:30px;
         width:690px;
-        background:rgba(255,255,255,0.9);
-        border-radius:30px;
-        padding:30px;
-        box-shadow:0 20px 50px rgba(0,0,0,0.1);
+        background:#f7f8fa;
+        border-radius:32px;
+        padding:34px;
     ">
 
         <!-- 标题 -->
         <div style="
-            background:linear-gradient(90deg,#5c7a8a,#8aa6b5);
+            background:#6f8796;
             color:#fff;
             display:inline-block;
-            padding:12px 30px;
-            border-radius:20px;
+            padding:12px 32px;
+            border-radius:22px;
             font-size:26px;
-            margin-bottom:20px;
+            margin-bottom:26px;
         ">
             每日资讯
         </div>
 
         <!-- 内容 -->
-        <div style="font-size:26px;line-height:1.8;color:#333;">
-            <p>{news[0]}</p>
-            <hr style="border:none;border-top:2px dashed #ccc;margin:20px 0;">
-            <p>{news[1]}</p>
-            <hr style="border:none;border-top:2px dashed #ccc;margin:20px 0;">
-            <p>{news[2]}</p>
+        <div style="
+            font-size:28px;
+            color:#333;
+            line-height:1.8;
+        ">
+            <p style="margin:0 0 22px 0;">{news[0]}</p>
+
+            <div style="border-top:2px dashed #cfcfcf;margin:18px 0;"></div>
+
+            <p style="margin:0 0 22px 0;">{news[1]}</p>
+
+            <div style="border-top:2px dashed #cfcfcf;margin:18px 0;"></div>
+
+            <p style="margin:0;">{news[2]}</p>
         </div>
 
     </div>
 
-    <!-- 底部 -->
+    <!-- 底部利率 -->
     <div style="
         position:absolute;
-        bottom:80px;
+        bottom:90px;
         left:40px;
     ">
-        <div style="font-size:30px;color:#5c7a8a;font-weight:700;">
+
+        <div style="font-size:34px;color:#5c7a8a;font-weight:700;">
             人民币最新存款利率
         </div>
 
-        <div style="margin-top:15px;font-size:28px;">
+        <div style="margin-top:18px;font-size:30px;">
             活期存款：<span style="color:#c9a063;">0.05%</span>
         </div>
 
-        <div style="margin-top:5px;font-size:28px;">
+        <div style="margin-top:8px;font-size:30px;">
             一年定期：<span style="color:#c9a063;">0.95%</span>
         </div>
 
-        <div style="margin-top:30px;font-size:30px;color:#5c7a8a;font-weight:700;">
+        <div style="margin-top:38px;font-size:34px;color:#5c7a8a;font-weight:700;">
             天弘余额宝最新七日年化
         </div>
 
-        <div style="margin-top:10px;font-size:40px;color:#c9a063;font-weight:900;">
+        <div style="margin-top:12px;font-size:46px;color:#c9a063;font-weight:900;">
             1.0000%
         </div>
+
     </div>
 
     </body>
