@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 WEBHOOK = os.getenv("WEBHOOK")
 
 
-# ===== 新闻（去重+防崩）=====
+# ===== 新闻（去来源 + 去重）=====
 def get_news():
     try:
         url = "https://news.google.com/rss/search?q=财经&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
@@ -23,9 +23,15 @@ def get_news():
 
         for item in root.findall(".//item"):
             title = item.find("title").text.strip()
+
+            # 去掉来源（- xxx）
+            if " - " in title:
+                title = title.split(" - ")[0]
+
             if title not in seen:
                 seen.add(title)
                 news.append(title)
+
             if len(news) >= 3:
                 break
 
@@ -35,7 +41,7 @@ def get_news():
         return news
 
     except:
-        return ["新闻获取失败", "新闻获取失败", "新闻获取失败"]
+        return ["新闻获取失败"] * 3
 
 
 # ===== UI =====
@@ -65,28 +71,28 @@ def make_html(news):
     ">
 
     <!-- LOGO -->
-    <div style="position:absolute;top:52px;left:42px;">
-        <div style="font-size:30px;font-weight:700;letter-spacing:1px;">通途控股</div>
-        <div style="font-size:14px;color:#888;margin-top:6px;">TONGTU HOLDINGS</div>
+    <div style="position:absolute;top:40px;left:42px;">
+        <div style="font-size:30px;font-weight:700;">通途控股</div>
+        <div style="font-size:14px;color:#888;margin-top:4px;">TONGTU HOLDINGS</div>
     </div>
 
     <!-- 背景大字 -->
     <div style="
         position:absolute;
-        top:180px;
+        top:130px;
         left:40px;
         font-size:150px;
         font-weight:900;
-        color:#dfe5ea;
+        color:#e2e7ec;
         letter-spacing:14px;
     ">
         TONGTU
     </div>
 
-    <!-- 主标题 -->
+    <!-- 主标题（上移） -->
     <div style="
         position:absolute;
-        top:300px;
+        top:230px;
         left:40px;
         font-size:92px;
         font-weight:900;
@@ -95,18 +101,19 @@ def make_html(news):
         <span style="color:#c8a060;margin-left:8px;">早安</span>
     </div>
 
-    <!-- 日期 -->
+    <!-- 日期（上移） -->
     <div style="
         position:absolute;
-        top:250px;
+        top:200px;
         right:48px;
         text-align:right;
     ">
         <div style="font-size:24px;color:#666;">{year}</div>
         <div style="font-size:84px;font-weight:900;line-height:1;">{date_big}</div>
-        <div style="font-size:20px;color:#999;margin-top:4px;">{weekday}</div>
+        <div style="font-size:20px;color:#999;margin-top:2px;">{weekday}</div>
 
-        <div style="margin-top:14px;font-size:20px;line-height:1.5;">
+        <!-- 黄历（更紧凑） -->
+        <div style="margin-top:10px;font-size:20px;line-height:1.5;">
             <span style="color:#1fa463;">宜：{yi}</span><br>
             <span style="color:#e05a5a;">忌：{ji}</span>
         </div>
@@ -115,7 +122,7 @@ def make_html(news):
     <!-- 卡片 -->
     <div style="
         position:absolute;
-        top:460px;
+        top:420px;
         left:30px;
         width:690px;
         background:#f6f7f9;
@@ -140,15 +147,15 @@ def make_html(news):
         <div style="
             font-size:26px;
             color:#333;
-            line-height:1.7;
+            line-height:1.65;
         ">
             <p style="margin:0 0 18px 0;">{news[0]}</p>
 
-            <div style="border-top:1.5px dashed #d6d6d6;margin:16px 0;"></div>
+            <div style="border-top:1px dashed #dcdcdc;margin:16px 0;"></div>
 
             <p style="margin:0 0 18px 0;">{news[1]}</p>
 
-            <div style="border-top:1.5px dashed #d6d6d6;margin:16px 0;"></div>
+            <div style="border-top:1px dashed #dcdcdc;margin:16px 0;"></div>
 
             <p style="margin:0;">{news[2]}</p>
         </div>
