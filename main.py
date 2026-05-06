@@ -4,26 +4,37 @@ import os
 import base64
 import hashlib
 from playwright.sync_api import sync_playwright
-import xml.etree.ElementTree as ET
 
 WEBHOOK = os.getenv("WEBHOOK")
 
-# ===== 获取财经新闻（央视RSS稳定版）=====
+# ===== 获取财经新闻（东方财富）=====
 def get_news():
     try:
-        url = "https://news.cctv.com/rss/finance.xml"
-        res = requests.get(url, timeout=10)
-        res.encoding = "utf-8"
+        url = "https://push2.eastmoney.com/api/qt/clist/get"
+        params = {
+            "pn": 1,
+            "pz": 5,
+            "po": 1,
+            "np": 1,
+            "fltt": 2,
+            "invt": 2,
+            "fid": "f3",
+            "fs": "m:0 t:6,m:0 t:13,m:1 t:2,m:1 t:23",
+            "fields": "f12,f14"
+        }
 
-        root = ET.fromstring(res.text)
+        res = requests.get(url, params=params, timeout=10).json()
+
+        data = res.get("data", {}).get("diff", [])
 
         news = []
-        for item in root.findall(".//item")[:5]:
-            title = item.find("title").text
-            news.append(title)
+        for item in data[:5]:
+            title = item.get("f14", "")
+            if title:
+                news.append(title)
 
         if not news:
-            return ["暂无财经新闻"]
+            return ["暂无财经资讯"]
 
         return news
 
@@ -31,7 +42,7 @@ def get_news():
         return ["新闻获取失败", str(e)]
 
 
-# ===== 生成HTML（无乱码版）=====
+# ===== 生成HTML=====
 def make_html(news):
     date = datetime.now().strftime("%Y-%m-%d")
 
@@ -90,25 +101,21 @@ def send():
     with open("out.png", "rb") as f:
         img = f.read()
 
-    data = {
+    requests.post(WEBHOOK, json={
         "msgtype": "image",
         "image": {
             "base64": base64.b64encode(img).decode(),
             "md5": hashlib.md5(img).hexdigest()
         }
-    }
-
-    requests.post(WEBHOOK, json=data)
+    })
 
 
 # ===== 主流程=====
 def main():
-    print("开始执行...")
     news = get_news()
     make_html(news)
     screenshot()
     send()
-    print("发送完成")
 
 
 if __name__ == "__main__":
