@@ -8,24 +8,22 @@ from playwright.sync_api import sync_playwright
 
 WEBHOOK = os.getenv("WEBHOOK")
 
-# ===== 获取财经新闻（稳定版）=====
+# ===== 获取财经新闻（新浪稳定版）=====
 def get_news():
     try:
         url = "https://finance.sina.com.cn/"
         res = requests.get(url, timeout=10)
 
-        # 关键：处理中文乱码
+        # 修复中文乱码
         res.encoding = "gbk"
         html = res.text
 
-        # 提取标题
         titles = re.findall(r'<a[^>]+>(.*?)</a>', html)
 
         news = []
         for t in titles:
             t = re.sub('<.*?>', '', t).strip()
 
-            # 过滤无效内容
             if len(t) > 10 and "新浪" not in t and "广告" not in t:
                 news.append(t)
 
@@ -38,22 +36,24 @@ def get_news():
         return news
 
     except Exception as e:
-        return [
-            "财经新闻获取失败",
-            "请检查网络或稍后重试",
-            str(e)
-        ]
+        return ["财经新闻获取失败", str(e)]
 
-# ===== 生成HTML海报=====
+
+# ===== 生成HTML海报（已解决乱码）=====
 def make_html(news):
     date = datetime.now().strftime("%Y-%m-%d")
 
     html = f"""
     <html>
+    <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap" rel="stylesheet">
+    </head>
+
     <body style="
         width:750px;
         height:1334px;
-        font-family:Arial;
+        font-family:'Noto Sans SC', Arial;
         background:linear-gradient(#f5f7fa,#e4ecf3);
         padding:40px;
     ">
@@ -83,7 +83,8 @@ def make_html(news):
     with open("temp.html", "w", encoding="utf-8") as f:
         f.write(html)
 
-# ===== 截图生成图片=====
+
+# ===== 截图=====
 def screenshot():
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--no-sandbox"])
@@ -94,6 +95,7 @@ def screenshot():
         page.goto("file://" + os.getcwd() + "/temp.html")
         page.screenshot(path="out.png")
         browser.close()
+
 
 # ===== 发送企业微信=====
 def send():
@@ -110,7 +112,8 @@ def send():
 
     requests.post(WEBHOOK, json=data)
 
-# ===== 主流程=====
+
+# ===== 主程序=====
 def main():
     print("开始执行...")
 
@@ -119,7 +122,8 @@ def main():
     screenshot()
     send()
 
-    print("完成发送")
+    print("发送完成")
+
 
 if __name__ == "__main__":
     main()
