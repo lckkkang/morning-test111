@@ -2,7 +2,6 @@ name: morning-news
 
 on:
   schedule:
-    # 每天早上 7:30（北京时间）
     - cron: '30 23 * * *'
   workflow_dispatch:
 
@@ -11,28 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ 拉取代码
-    - name: Checkout
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-    # 2️⃣ 安装 Python
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    # 3️⃣ 安装依赖
-    - name: Install dependencies
-    - name: 安装中文字体
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y fonts-wqy-zenhei
+    - name: 安装依赖
       run: |
         pip install requests playwright
         python -m playwright install chromium
 
-    # 4️⃣ 运行脚本
-    - name: Run main
+    - name: 运行脚本
       run: python main.py
       env:
         WEBHOOK: ${{ secrets.WEBHOOK }}
