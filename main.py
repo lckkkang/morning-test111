@@ -3,43 +3,35 @@ from datetime import datetime
 import os
 import base64
 import hashlib
-import re
 from playwright.sync_api import sync_playwright
+import xml.etree.ElementTree as ET
 
 WEBHOOK = os.getenv("WEBHOOK")
 
-# ===== 获取财经新闻（新浪稳定版）=====
+# ===== 获取财经新闻（央视RSS稳定版）=====
 def get_news():
     try:
-        url = "https://finance.sina.com.cn/"
+        url = "https://news.cctv.com/rss/finance.xml"
         res = requests.get(url, timeout=10)
+        res.encoding = "utf-8"
 
-        # 修复中文乱码
-        res.encoding = "gbk"
-        html = res.text
-
-        titles = re.findall(r'<a[^>]+>(.*?)</a>', html)
+        root = ET.fromstring(res.text)
 
         news = []
-        for t in titles:
-            t = re.sub('<.*?>', '', t).strip()
-
-            if len(t) > 10 and "新浪" not in t and "广告" not in t:
-                news.append(t)
-
-            if len(news) >= 5:
-                break
+        for item in root.findall(".//item")[:5]:
+            title = item.find("title").text
+            news.append(title)
 
         if not news:
-            return ["暂无财经新闻", "市场数据整理中", "请稍后查看"]
+            return ["暂无财经新闻"]
 
         return news
 
     except Exception as e:
-        return ["财经新闻获取失败", str(e)]
+        return ["新闻获取失败", str(e)]
 
 
-# ===== 生成HTML海报（已解决乱码）=====
+# ===== 生成HTML（无乱码版）=====
 def make_html(news):
     date = datetime.now().strftime("%Y-%m-%d")
 
@@ -58,7 +50,7 @@ def make_html(news):
         padding:40px;
     ">
 
-    <h1 style="font-size:60px;margin-bottom:20px;">早安资讯</h1>
+    <h1 style="font-size:60px;">早安资讯</h1>
     <h3 style="color:#666;">{date}</h3>
 
     <div style="
@@ -70,10 +62,6 @@ def make_html(news):
         line-height:1.6;
     ">
     {''.join([f'<p>• {n}</p>' for n in news])}
-    </div>
-
-    <div style="position:absolute;bottom:40px;color:#999;">
-    每日自动推送
     </div>
 
     </body>
@@ -97,7 +85,7 @@ def screenshot():
         browser.close()
 
 
-# ===== 发送企业微信=====
+# ===== 发送=====
 def send():
     with open("out.png", "rb") as f:
         img = f.read()
@@ -113,15 +101,13 @@ def send():
     requests.post(WEBHOOK, json=data)
 
 
-# ===== 主程序=====
+# ===== 主流程=====
 def main():
     print("开始执行...")
-
     news = get_news()
     make_html(news)
     screenshot()
     send()
-
     print("发送完成")
 
 
