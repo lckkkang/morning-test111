@@ -4,37 +4,26 @@ import os
 import base64
 import hashlib
 from playwright.sync_api import sync_playwright
+import xml.etree.ElementTree as ET
 
 WEBHOOK = os.getenv("WEBHOOK")
 
-# ===== 获取财经新闻（东方财富）=====
+# ===== 获取新闻（Google News，全球稳定）=====
 def get_news():
     try:
-        url = "https://push2.eastmoney.com/api/qt/clist/get"
-        params = {
-            "pn": 1,
-            "pz": 5,
-            "po": 1,
-            "np": 1,
-            "fltt": 2,
-            "invt": 2,
-            "fid": "f3",
-            "fs": "m:0 t:6,m:0 t:13,m:1 t:2,m:1 t:23",
-            "fields": "f12,f14"
-        }
+        url = "https://news.google.com/rss/search?q=财经&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
+        res = requests.get(url, timeout=10)
+        res.encoding = "utf-8"
 
-        res = requests.get(url, params=params, timeout=10).json()
-
-        data = res.get("data", {}).get("diff", [])
+        root = ET.fromstring(res.text)
 
         news = []
-        for item in data[:5]:
-            title = item.get("f14", "")
-            if title:
-                news.append(title)
+        for item in root.findall(".//item")[:5]:
+            title = item.find("title").text
+            news.append(title)
 
         if not news:
-            return ["暂无财经资讯"]
+            return ["暂无财经新闻"]
 
         return news
 
