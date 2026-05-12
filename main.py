@@ -1,9 +1,9 @@
  (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/main.py b/main.py
-index 2847dc67a2d3c66c45f7147e2c46eea7d1d5fa99..69c4378751b7c3b00ac03ceb69afab7b56278b30 100644
+index 2847dc67a2d3c66c45f7147e2c46eea7d1d5fa99..56392e8bc82f855e5854d9a1ea69fc06f33971cf 100644
 --- a/main.py
 +++ b/main.py
-@@ -1,83 +1,254 @@
+@@ -1,83 +1,255 @@
 -import requests
 -from datetime import datetime
 -import os
@@ -27,6 +27,7 @@ index 2847dc67a2d3c66c45f7147e2c46eea7d1d5fa99..69c4378751b7c3b00ac03ceb69afab7b
 +NEWS_URL = "https://news.google.com/rss/search?q=财经&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
 +DEFAULT_NEWS = "暂无财经要闻"
 +NEWS_FETCH_FAILED = "新闻获取失败"
++STRICT_ERRORS = os.getenv("STRICT_ERRORS", "").lower() in {"1", "true", "yes"}
 +LUNAR_BASE_DATE = date(1900, 1, 31)
 +LUNAR_INFO = (
 +    0x04BD8, 0x04AE0, 0x0A570, 0x054D5, 0x0D260, 0x0D950, 0x16554, 0x056A0,
@@ -280,7 +281,7 @@ index 2847dc67a2d3c66c45f7147e2c46eea7d1d5fa99..69c4378751b7c3b00ac03ceb69afab7b
          position:absolute;
          top:130px;
          left:40px;
-@@ -90,148 +261,175 @@ def make_html(news):
+@@ -90,148 +262,190 @@ def make_html(news):
      </div>
  
      <!-- 主标题（上移） -->
@@ -475,8 +476,23 @@ index 2847dc67a2d3c66c45f7147e2c46eea7d1d5fa99..69c4378751b7c3b00ac03ceb69afab7b
 -    screenshot()
 -    send()
 +    html_path = make_html(news)
-+    image_path = screenshot(html_path)
-+    send(image_path)
++
++    try:
++        image_path = screenshot(html_path)
++    except Exception as exc:
++        if STRICT_ERRORS:
++            raise
++        print(f"WARNING: {exc}; generated HTML preview at {html_path}")
++        return html_path
++
++    try:
++        send(image_path)
++    except Exception as exc:
++        if STRICT_ERRORS:
++            raise
++        print(f"WARNING: {exc}; generated image at {image_path}")
++
++    return image_path
  
  
  if __name__ == "__main__":
